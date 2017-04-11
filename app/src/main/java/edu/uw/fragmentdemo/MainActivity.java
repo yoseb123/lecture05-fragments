@@ -2,6 +2,9 @@ package edu.uw.fragmentdemo;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -12,67 +15,44 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MoviesFragment.OnMovieClickListener {
 
     private static final String TAG = "MainActivity";
-
-    private ArrayAdapter<Movie> adapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        adapter = new ArrayAdapter<Movie>(this,
-                R.layout.list_item, R.id.txtItem, new ArrayList<Movie>());
-
-        ListView listView = (ListView)findViewById(R.id.listView);
-        listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Movie movie = (Movie)parent.getItemAtPosition(position);
-                Log.v(TAG, "You clicked on: "+movie);
-            }
-        });
     }
-
 
     //respond to search button clicking
     public void handleSearchClick(View v){
         EditText text = (EditText)findViewById(R.id.txtSearch);
         String searchTerm = text.getText().toString();
 
-        downloadMovieData(searchTerm);
+        //create the fragment
+        MoviesFragment fragment = MoviesFragment.newInstance(searchTerm);
+
+        FragmentManager fm = getSupportFragmentManager();
+      //  MoviesFragment fragment = (MoviesFragment)fm.findFragmentById(R.id.container);
+
+        FragmentTransaction ft = fm.beginTransaction();
+        //add(), remove(), replace()
+        ft.replace(R.id.container, fragment, "MovieFragment");
+        ft.commit();
+
+//        downloadMovieData(searchTerm);
+        //myMovie1Fragment.downloadMovieData(searchTerm);
+        fragment.downloadMovieData(searchTerm);
     }
 
-    //helper method for downloading the data via the MovieDownloadTask
-    public void downloadMovieData(String searchTerm){
-        Log.v(TAG, "You searched for: "+searchTerm);
-        MovieDownloadTask task = new MovieDownloadTask();
-        task.execute(searchTerm);
+    @Override
+    public void onMovieClick(Movie movie) {
+        DetailFragment fragment = DetailFragment.newInstance(movie);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment, "DetailFragment")
+                .addToBackStack(null)
+                .commit();
     }
-
-    //A task to download movie data from the internet on a background thread
-    public class MovieDownloadTask extends AsyncTask<String, Void, ArrayList<Movie>> {
-
-        @Override
-        protected ArrayList<Movie> doInBackground(String... params) {
-            ArrayList<Movie> data = MovieDownloader.downloadMovieData(params[0]);
-            return data;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Movie> movies) {
-            super.onPostExecute(movies);
-
-            adapter.clear();
-            for(Movie movie : movies){
-                adapter.add(movie);
-            }
-        }
-    }
-
 }
