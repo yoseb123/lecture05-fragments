@@ -27,9 +27,9 @@ public class DetailFragment extends Fragment {
         args.putString(IMDB_ARG, movie.imdbId);
         args.putString(TITLE_ARG, movie.title);
 
-        DetailFragment fragment - new DetailFragment();
+        DetailFragment fragment = new DetailFragment();
         fragment.setArguments(args);
-        return fragment
+        return fragment;
     }
 
     @Override

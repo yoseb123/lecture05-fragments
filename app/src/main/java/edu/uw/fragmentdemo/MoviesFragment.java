@@ -4,6 +4,7 @@ package edu.uw.fragmentdemo;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,10 +23,9 @@ import java.util.ArrayList;
 public class MoviesFragment extends Fragment {
 
     public static final String TAG = "MoviesFragment";
-
     private ArrayAdapter<Movie> adapter;
-
     private static final String SEARCH_ARG_KEY = "search_key";
+    private OnMovieClickListener callback;
 
     interface OnMovieClickListener {
         void onMovieClick(Movie movie);
@@ -33,7 +33,13 @@ public class MoviesFragment extends Fragment {
 
     @Override
     public void onAttach(Context context) {
+        super.onAttach(context);
 
+        try {
+            callback = (OnMovieClickListener)context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement");
+        }
     }
 
     public MoviesFragment() {
@@ -48,6 +54,11 @@ public class MoviesFragment extends Fragment {
         MoviesFragment fragment = new MoviesFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override
